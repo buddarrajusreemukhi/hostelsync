@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_URL + '/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -25,12 +25,23 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       const refreshToken = localStorage.getItem('hostelsync_refresh_token');
+
       if (refreshToken) {
         try {
-          const res = await axios.post('/api/auth/refresh-token', { refreshToken });
+          const res = await axios.post(
+            `${import.meta.env.VITE_API_URL}/api/auth/refresh-token`,
+            { refreshToken }
+          );
+
           if (res.data.success) {
-            localStorage.setItem('hostelsync_access_token', res.data.data.accessToken);
-            api.defaults.headers.common.Authorization = `Bearer ${res.data.data.accessToken}`;
+            localStorage.setItem(
+              'hostelsync_access_token',
+              res.data.data.accessToken
+            );
+
+            api.defaults.headers.common.Authorization =
+              `Bearer ${res.data.data.accessToken}`;
+
             return api(originalRequest);
           }
         } catch (e) {
@@ -41,6 +52,7 @@ api.interceptors.response.use(
         }
       }
     }
+
     return Promise.reject(error);
   }
 );
