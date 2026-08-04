@@ -1,16 +1,30 @@
 package com.hostelsync.service;
 
-import com.hostelsync.entity.Gender;
+import com.hostelsync.shared.enums.Gender;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class DefaultAvatarService {
 
-    /**
-     * Returns null for default users so no stock/default avatar image is displayed.
-     * Only uploaded custom photos will be rendered as images.
-     */
+    @Value("${hostelsync.default-avatars.male-url:/assets/avatars/default-male.webp}")
+    private String maleAvatarUrl;
+
+    @Value("${hostelsync.default-avatars.female-url:/assets/avatars/default-female.webp}")
+    private String femaleAvatarUrl;
+
+    @Value("${hostelsync.default-avatars.neutral-url:/assets/avatars/default-neutral.webp}")
+    private String neutralAvatarUrl;
+
     public String getDefaultAvatarUrl(Gender gender) {
-        return null;
+        if (gender == null) {
+            return neutralAvatarUrl;
+        }
+
+        return switch (gender) {
+            case MALE -> maleAvatarUrl;
+            case FEMALE -> femaleAvatarUrl;
+            case OTHER, PREFER_NOT_TO_SAY -> neutralAvatarUrl;
+        };
     }
 }
