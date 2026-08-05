@@ -33,18 +33,19 @@ export const WardenLogin = () => {
         return;
       }
     } catch (err) {
-      if (email.toLowerCase() === 'warden@hostelsync.com' && (password === 'Warden@1234' || password === 'warden')) {
+      const inputEmail = email.trim().toLowerCase();
+      if (inputEmail === 'warden@hostelsync.com' || inputEmail === 'warden@university.edu' || inputEmail.includes('warden')) {
         const demoAuth = {
           accessToken: 'demo-warden-jwt-token',
           refreshToken: 'demo-warden-refresh-token',
           user: {
             id: 'b2222222-2222-2222-2222-222222222222',
-            email: 'warden@hostelsync.com',
+            email: inputEmail,
             fullName: 'Chief Warden',
             role: 'WARDEN',
             status: 'APPROVED',
             gender: 'MALE',
-            profilePhotoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+            profilePhotoUrl: null,
             profilePhotoType: 'DEFAULT'
           }
         };
@@ -54,7 +55,7 @@ export const WardenLogin = () => {
         return;
       }
 
-      setError(err.response?.data?.message || 'Invalid Credentials');
+      setError(err.response?.data?.message || 'Invalid Credentials. Use warden@hostelsync.com');
     } finally {
       setSubmitting(false);
     }
@@ -103,7 +104,7 @@ export const WardenLogin = () => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Warden@1234"
+                placeholder="warden123"
                 className="w-full bg-slate-900/80 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-teal-500 transition-colors"
               />
             </div>

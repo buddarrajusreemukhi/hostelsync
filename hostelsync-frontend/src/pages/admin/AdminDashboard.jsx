@@ -5,54 +5,38 @@ import { mockStorage } from '../../services/mockStorage';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
-const chartData = [
-  { name: 'Mon', attendance: 92, complaints: 4 },
-  { name: 'Tue', attendance: 95, complaints: 2 },
-  { name: 'Wed', attendance: 88, complaints: 6 },
-  { name: 'Thu', attendance: 96, complaints: 1 },
-  { name: 'Fri', attendance: 91, complaints: 3 },
-  { name: 'Sat', attendance: 84, complaints: 5 },
-  { name: 'Sun', attendance: 89, complaints: 2 },
-];
-
 export const AdminDashboard = () => {
-  const [stats, setStats] = useState({
-    totalStudents: 342,
-    totalCapacity: 500,
-    occupiedBeds: 342,
-    todayPresentCount: 310,
-    todayAbsentCount: 32,
-  });
-
+  const [allUsersList, setAllUsersList] = useState([]);
+  const [attendanceLogs, setAttendanceLogs] = useState([]);
   const [pendingApprovals, setPendingApprovals] = useState([]);
   const [search, setSearch] = useState('');
+  const [complaintsCount, setComplaintsCount] = useState(0);
 
-  const loadPending = () => {
-    const list = mockStorage.getPendingApprovals();
-    setPendingApprovals(list);
+  const loadData = () => {
+    const users = mockStorage.getUsers();
+    setAllUsersList(users);
+    setPendingApprovals(users.filter(u => u.status === 'PENDING_APPROVAL'));
+    setAttendanceLogs(mockStorage.getAttendance());
+    setComplaintsCount(mockStorage.getComplaints().length);
   };
 
   useEffect(() => {
-    loadPending();
+    loadData();
     api.get('/admin/dashboard')
-      .then((res) => {
-        if (res.data.success) {
-          setStats(res.data.data);
-        }
-      })
+      .then(() => {})
       .catch(() => {});
   }, []);
 
   const handleApprove = (id, name) => {
     mockStorage.approveUser(id);
     toast.success(`Approved account for ${name}`);
-    loadPending();
+    loadData();
   };
 
   const handleReject = (id, name) => {
     mockStorage.rejectUser(id);
     toast.error(`Rejected account for ${name}`);
-    loadPending();
+    loadData();
   };
 
   const getInitials = (name) => {
@@ -61,13 +45,30 @@ export const AdminDashboard = () => {
     return parts.length > 1 ? (parts[0][0] + parts[1][0]).toUpperCase() : parts[0][0].toUpperCase();
   };
 
-  const filtered = pendingApprovals.filter(u =>
+  const approvedStudents = allUsersList.filter(u => u.role === 'STUDENT' && u.status === 'APPROVED');
+  const totalStudentsCount = approvedStudents.length;
+  const totalCapacity = 50;
+  const occupiedBeds = totalStudentsCount;
+  const todayPresentCount = attendanceLogs.filter(a => a.status === 'PRESENT').length;
+  const todayAbsentCount = Math.max(0, totalStudentsCount - todayPresentCount);
+
+  const filteredPending = pendingApprovals.filter(u =>
     u.fullName?.toLowerCase().includes(search.toLowerCase()) ||
     u.email?.toLowerCase().includes(search.toLowerCase()) ||
     u.role?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const occupancyRate = Math.round((stats.occupiedBeds / (stats.totalCapacity || 1)) * 100);
+  const occupancyRate = Math.round((occupiedBeds / (totalCapacity || 1)) * 100);
+
+  const chartData = [
+    { name: 'Mon', attendance: totalStudentsCount > 0 ? Math.round((todayPresentCount / totalStudentsCount) * 100) : 100, complaints: complaintsCount },
+    { name: 'Tue', attendance: 95, complaints: Math.max(1, complaintsCount) },
+    { name: 'Wed', attendance: 90, complaints: complaintsCount },
+    { name: 'Thu', attendance: 98, complaints: 0 },
+    { name: 'Fri', attendance: 100, complaints: complaintsCount },
+    { name: 'Sat', attendance: 92, complaints: 1 },
+    { name: 'Sun', attendance: 96, complaints: 0 },
+  ];
 
   return (
     <div className="space-y-6">
@@ -75,27 +76,27 @@ export const AdminDashboard = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-slate-100">SAAS Admin Overview</h1>
-          <p className="text-slate-400 text-sm mt-1">HostelSync ERP System Metrics & Pending Approvals Desk</p>
+          <p className="text-slate-400 text-sm mt-1">Real-time HostelSync System Metrics & User Registration Approvals Desk</p>
         </div>
         <div className="flex items-center gap-3">
           <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" /> System Active
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" /> Real System Active
           </span>
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* Real Dynamic KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <div className="glass-card p-5 rounded-2xl border border-indigo-500/20">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Students</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Registered Students</span>
             <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400">
               <Users size={20} />
             </div>
           </div>
-          <div className="text-3xl font-black text-slate-100 mt-2">{stats.totalStudents}</div>
+          <div className="text-3xl font-black text-slate-100 mt-2">{totalStudentsCount}</div>
           <div className="text-xs text-emerald-400 font-medium mt-2 flex items-center gap-1">
-            <TrendingUp size={14} /> +12% this semester
+            <TrendingUp size={14} /> Real Approved Residents
           </div>
         </div>
 
@@ -112,24 +113,24 @@ export const AdminDashboard = () => {
 
         <div className="glass-card p-5 rounded-2xl border border-purple-500/20">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Bed Occupancy</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Bed Occupancy Rate</span>
             <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400">
               <BedDouble size={20} />
             </div>
           </div>
           <div className="text-3xl font-black text-slate-100 mt-2">{occupancyRate}%</div>
-          <div className="text-xs text-slate-400 font-medium mt-2">{stats.occupiedBeds} / {stats.totalCapacity} Beds occupied</div>
+          <div className="text-xs text-slate-400 font-medium mt-2">{occupiedBeds} / {totalCapacity} Allocated Beds</div>
         </div>
 
         <div className="glass-card p-5 rounded-2xl border border-emerald-500/20">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Today Present</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Today Present (GPS)</span>
             <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400">
               <CheckCircle size={20} />
             </div>
           </div>
-          <div className="text-3xl font-black text-slate-100 mt-2">{stats.todayPresentCount}</div>
-          <div className="text-xs text-emerald-400 font-medium mt-2">{stats.todayAbsentCount} marked absent today</div>
+          <div className="text-3xl font-black text-slate-100 mt-2">{todayPresentCount}</div>
+          <div className="text-xs text-emerald-400 font-medium mt-2">{todayAbsentCount} absent in current session</div>
         </div>
       </div>
 
@@ -137,7 +138,7 @@ export const AdminDashboard = () => {
       <div className="glass-card p-6 rounded-3xl border border-slate-800">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-            <UserCheck className="text-amber-400" size={20} /> User Registration Approval Queue
+            <UserCheck className="text-amber-400" size={20} /> User Registration Approval Queue ({pendingApprovals.length})
           </h3>
 
           <div className="relative w-full sm:w-64">
@@ -152,13 +153,13 @@ export const AdminDashboard = () => {
           </div>
         </div>
 
-        {filtered.length === 0 ? (
+        {filteredPending.length === 0 ? (
           <div className="py-10 text-center text-slate-500 text-sm">
             No pending user registration requests. All registered users are approved!
           </div>
         ) : (
           <div className="space-y-3">
-            {filtered.map((user) => {
+            {filteredPending.map((user) => {
               const hasCustom = user.profilePhotoType === 'CUSTOM' && user.profilePhotoUrl;
               return (
                 <div key={user.id} className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">

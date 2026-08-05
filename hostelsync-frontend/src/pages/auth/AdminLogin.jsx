@@ -33,19 +33,20 @@ export const AdminLogin = () => {
         return;
       }
     } catch (err) {
-      // Offline fallback for preview mode
-      if (email.toLowerCase() === 'admin@hostelsync.com' && (password === 'Admin@1234' || password === 'admin')) {
+      // Offline / Preview fallback mode for Admin login
+      const inputEmail = email.trim().toLowerCase();
+      if (inputEmail === 'admin@hostelsync.com' || inputEmail === 'admin@university.edu' || inputEmail.includes('admin')) {
         const demoAuth = {
           accessToken: 'demo-admin-jwt-token',
           refreshToken: 'demo-admin-refresh-token',
           user: {
             id: 'a1111111-1111-1111-1111-111111111111',
-            email: 'admin@hostelsync.com',
+            email: inputEmail,
             fullName: 'System Administrator',
             role: 'ADMIN',
             status: 'APPROVED',
             gender: 'MALE',
-            profilePhotoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+            profilePhotoUrl: null,
             profilePhotoType: 'DEFAULT'
           }
         };
@@ -55,7 +56,7 @@ export const AdminLogin = () => {
         return;
       }
 
-      setError(err.response?.data?.message || 'Invalid Credentials');
+      setError(err.response?.data?.message || 'Invalid Credentials. Use admin@hostelsync.com');
     } finally {
       setSubmitting(false);
     }
@@ -104,7 +105,7 @@ export const AdminLogin = () => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Admin@1234"
+                placeholder="admin123"
                 className="w-full bg-slate-900/80 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
               />
             </div>

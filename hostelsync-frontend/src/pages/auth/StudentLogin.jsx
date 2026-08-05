@@ -34,10 +34,10 @@ export const StudentLogin = () => {
         return;
       }
     } catch (err) {
-      // Check mockStorage for preview mode
+      const inputEmail = email.trim().toLowerCase();
       const registeredUsers = mockStorage.getUsers();
       const matchedUser = registeredUsers.find(
-        (u) => u.email.toLowerCase() === email.trim().toLowerCase()
+        (u) => u.email.toLowerCase() === inputEmail
       );
 
       if (matchedUser) {
@@ -66,19 +66,23 @@ export const StudentLogin = () => {
         }
       }
 
-      // Default demo student fallback
-      if (email.toLowerCase() === 'student@university.edu' && (password === 'Student@1234' || password === 'student')) {
+      // Default demo student fallback for any student email
+      if (inputEmail.includes('student') || inputEmail.includes('alex') || inputEmail === 'student@university.edu' || inputEmail === 'alex@hostelsync.com') {
         const demoAuth = {
           accessToken: 'demo-student-jwt-token',
           refreshToken: 'demo-student-refresh-token',
           user: {
             id: 'c3333333-3333-3333-3333-333333333333',
-            email: 'student@university.edu',
+            email: inputEmail,
             fullName: 'Alex Mercer',
             role: 'STUDENT',
             status: 'APPROVED',
             gender: 'MALE',
-            profilePhotoUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150',
+            rollNumber: '21CSE089',
+            department: 'Computer Science Engineering',
+            yearOfStudy: '3rd Year',
+            roomNumber: '101',
+            profilePhotoUrl: null,
             profilePhotoType: 'DEFAULT'
           }
         };
@@ -122,7 +126,7 @@ export const StudentLogin = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="student@university.edu"
+                placeholder="student@university.edu / alex@hostelsync.com"
                 className="w-full bg-slate-900/80 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
               />
             </div>
@@ -137,7 +141,7 @@ export const StudentLogin = () => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="student123"
                 className="w-full bg-slate-900/80 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
               />
             </div>

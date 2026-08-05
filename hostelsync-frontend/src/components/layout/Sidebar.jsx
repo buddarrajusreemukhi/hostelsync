@@ -11,7 +11,6 @@ import {
   Users,
   Building2,
   FileSpreadsheet,
-  Bot,
   Utensils,
   ShieldAlert,
   ChevronLeft,
@@ -62,7 +61,6 @@ export const Sidebar = ({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
   const navItems = getNavItems();
 
   const sharedNavItems = [
-    { label: 'AI Virtual Assistant', path: '/shared/ai-assistant', icon: Bot },
     { label: 'Mess Menu', path: '/shared/mess-menu', icon: Utensils },
     { label: 'Emergency SOS', path: '/shared/emergency', icon: ShieldAlert },
   ];

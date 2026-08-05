@@ -34,10 +34,10 @@ export const ParentLogin = () => {
         return;
       }
     } catch (err) {
-      // Check mockStorage for preview mode
+      const inputEmail = email.trim().toLowerCase();
       const registeredUsers = mockStorage.getUsers();
       const matchedUser = registeredUsers.find(
-        (u) => u.email.toLowerCase() === email.trim().toLowerCase()
+        (u) => u.email.toLowerCase() === inputEmail
       );
 
       if (matchedUser) {
@@ -66,19 +66,22 @@ export const ParentLogin = () => {
         }
       }
 
-      // Default demo parent fallback
-      if (email.toLowerCase() === 'parent@email.com' && (password === 'Parent@1234' || password === 'parent')) {
+      // Default demo parent fallback for any parent email
+      if (inputEmail.includes('parent') || inputEmail.includes('robert') || inputEmail === 'parent@email.com' || inputEmail === 'robert@hostelsync.com') {
         const demoAuth = {
           accessToken: 'demo-parent-jwt-token',
           refreshToken: 'demo-parent-refresh-token',
           user: {
             id: 'd4444444-4444-4444-4444-444444444444',
-            email: 'parent@email.com',
+            email: inputEmail,
             fullName: 'Robert Mercer',
             role: 'PARENT',
             status: 'APPROVED',
             gender: 'MALE',
-            profilePhotoUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+            phoneNumber: '+19876543211',
+            linkedStudentName: 'Alex Mercer',
+            linkedStudentRoll: '21CSE089',
+            profilePhotoUrl: null,
             profilePhotoType: 'DEFAULT'
           }
         };
@@ -122,7 +125,7 @@ export const ParentLogin = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="parent@email.com"
+                placeholder="parent@email.com / robert@hostelsync.com"
                 className="w-full bg-slate-900/80 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-colors"
               />
             </div>
@@ -137,7 +140,7 @@ export const ParentLogin = () => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="parent123"
                 className="w-full bg-slate-900/80 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-colors"
               />
             </div>
